@@ -213,21 +213,19 @@ def _loadYicesFromPath(path, library):
     # iam: if someone can nail down what exceptions CDLL can raise we could be more specific
     # but the documentation is pretty vague.
     except Exception as exception: # pylint: disable=broad-except
-        sys.stderr.write('\nCDLL({0}) raised {1}.\n'.format(where, exception))
+        # sys.stderr.write('\nCDLL({0}) raised {1}.\n'.format(where, exception))
         return False
 
 def loadYices():
-    """attempts to load the yices library, relying on CDLL, and using /usr/local/lib as a backup plan."""
+    """attempts to load the yices library, relying on CDLL, and using $PATH and /usr/local/lib."""
     global libyicespath
-    global libyices
     error_msg = "Yices dynamic library not found."
-    if _loadYicesFromPath(None, libyicespath):
-        return
-    if _loadYicesFromPath('/usr/local/lib', libyicespath):
-        return
+    # attempt loading yices from both $PATH and default install location
+    for path in sys.path + ['/usr/local/lib']:
+        if _loadYicesFromPath(path, libyicespath):
+            return
     # else we failed
     raise YicesAPIException(error_msg)
-
 
 
 loadYices()
